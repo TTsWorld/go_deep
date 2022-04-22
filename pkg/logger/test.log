@@ -1,0 +1,13 @@
+{"x_level":"debug","x_date":"2022-04-21T20:43:53+08:00","x_source":"logger/logger_test.go:12","x_server":"","t":1650545033930020,"x_code":1,"x_data":"hello:logger"}
+{"x_level":"debug","x_date":"2022-04-21T20:43:53+08:00","x_source":"logger/logger_test.go:13","x_server":"","t":1650545033930425,"x_code":1,"x_data":"hello:logger"}
+{"x_level":"debug","x_date":"2022-04-21T20:43:53+08:00","x_source":"logger/logger_test.go:14","x_server":"","t":1650545033930595,"x_code":0,"x_data":{"appid":"123"}}
+{"x_level":"error","x_date":"2022-04-21T20:43:53+08:00","x_source":"logger/logger_test.go:17","x_server":"","t":1650545033930849,"x_code":1,"error":"123"}
+{"x_level":"error","x_date":"2022-04-21T20:43:53+08:00","x_source":"logger/logger_test.go:20","x_server":"","t":1650545033930891,"x_code":1,"errorctx":"123"}
+{"x_level":"info","x_date":"2022-04-21T20:43:53+08:00","x_source":"logger/logger_test.go:23","x_server":"","t":1650545033930899,"x_code":1,"infoJson":"123"}
+{"x_level":"debug","x_date":"2022-04-21T20:46:03+08:00","x_source":"logger/logger_test.go:12","x_server":"","t":1650545163720489,"x_code":1,"x_data":"hello:logger"}
+{"x_level":"debug","x_date":"2022-04-21T20:46:03+08:00","x_source":"logger/logger_test.go:13","x_server":"","t":1650545163720787,"x_code":1,"x_data":"hello:logger"}
+{"x_level":"debug","x_date":"2022-04-21T20:46:03+08:00","x_source":"logger/logger_test.go:14","x_server":"","t":1650545163720813,"x_code":0,"x_data":{"appid":"123"}}
+{"x_level":"error","x_date":"2022-04-21T20:46:03+08:00","x_source":"logger/logger_test.go:17","x_server":"","t":1650545163721021,"x_code":1,"error":"123"}
+{"x_level":"error","x_date":"2022-04-21T20:46:03+08:00","x_source":"logger/logger_test.go:20","x_server":"","t":1650545163721059,"x_code":1,"errorctx":"123"}
+{"x_level":"info","x_date":"2022-04-21T20:46:03+08:00","x_source":"logger/logger_test.go:23","x_server":"","t":1650545163721066,"x_code":1,"infoJson":"123"}
+{"x_level":"debug","x_date":"2022-04-21T20:46:03+08:00","x_source":"logger/logger_test.go:26","x_server":"","t":1650545163721072,"x_code":1,"debugJson":"123"}
