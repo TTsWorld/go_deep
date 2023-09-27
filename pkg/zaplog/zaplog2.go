@@ -7,7 +7,7 @@ import (
 	"sync"
 )
 
-//async zaplog
+// async zaplog
 type ZapLogOper interface {
 	Debug(msg string, fields ...zap.Field)
 	Info(msg string, fields ...zap.Field)
@@ -18,12 +18,12 @@ type ZapLogOper interface {
 	Fatal(msg string, fields ...zap.Field)
 }
 
-//同步日志，直接写
+// 同步日志，直接写
 type synczaplogger struct {
 	zaplog *zap.Logger
 }
 
-//异步日志
+// 异步日志
 type asynczaplogger struct {
 	zaplog   *zap.Logger
 	masyslog *asynclogger
@@ -71,7 +71,7 @@ func newasynczaplogger(nwriters map[zapcore.Level]zapcore.WriteSyncer) *asynczap
 	return retlogger
 }
 
-//返回接口
+// 返回接口
 func NewZapLogger(wtMode int, nwriters map[zapcore.Level]zapcore.WriteSyncer) ZapLogOper {
 	if wtMode == 0 {
 		return newsynczaplogger(nwriters)
@@ -115,7 +115,7 @@ func (log *zaplogger) Fatal(msg string, fields ...zap.Field) {
 	log.zaplog.Fatal(msg, fields...)
 }
 
-//-------
+// -------
 func (log *synczaplogger) Debug(msg string, fields ...zap.Field) {
 	log.zaplog.Debug(msg, fields...)
 }
@@ -172,7 +172,7 @@ func (log *asynczaplogger) Fatal(msg string, fields ...zap.Field) {
 	log.masyslog.doAsyncLog(log.zaplog.Fatal, msg, fields...)
 }
 
-//异步的简单实现
+// 异步的简单实现
 const (
 	cst_defmsgsize       = 200
 	cst_deffieldnums     = 2
@@ -209,7 +209,7 @@ type asyncMsg struct {
 	f      func(msg string, fields ...zap.Field)
 }
 
-//异步日志
+// 异步日志
 type asynclogger struct {
 	//异步队列数据
 	logMsgCh chan *asyncMsg
@@ -235,7 +235,7 @@ func (log *asynclogger) doAsyncLog(f func(msg string, fields ...zap.Field), msg 
 	log.logMsgCh <- logdata
 }
 
-//zap.Core接口的实现
+// zap.Core接口的实现
 type filecore struct {
 	zapcore.LevelEnabler
 	enc     zapcore.Encoder

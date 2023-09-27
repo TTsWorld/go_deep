@@ -1,0 +1,1 @@
+{"level":"error","ts":1650764504771,"caller":"zaplog/zaplog1_test.go:25","msg":"http start success， port 8080","stacktrace":"mico-parking/internal/pkg/zaplog.TestLog\n\t/Users/litiantian/code/mico/mico-backend/mico-parking/internal/pkg/zaplog/zaplog1_test.go:25\ntesting.tRunner\n\t/usr/local/go/src/testing/testing.go:1439"}

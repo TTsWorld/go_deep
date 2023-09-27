@@ -28,8 +28,8 @@ func TestZapSugaredLogger(t *testing.T) {
 	defer sugarLogger.Sync()
 }
 
-//测试 zaplog 自定义 encoder
-//使用 json 作为输出格式, 输出到文件
+// 测试 zaplog 自定义 encoder
+// 使用 json 作为输出格式, 输出到文件
 func TestZapCustomJsonOut(t *testing.T) {
 	fd, _ := os.Create("test.log")
 	writereSync := zapcore.AddSync(fd)
@@ -47,8 +47,8 @@ func TestZapCustomJsonOut(t *testing.T) {
 
 }
 
-//测试 zaplog 自定义 encoder
-//输出到控制台
+// 测试 zaplog 自定义 encoder
+// 输出到控制台
 func TestZapCustomConsoleOut(t *testing.T) {
 	writereSync := zapcore.AddSync(os.Stdout)
 
@@ -69,7 +69,7 @@ func TestZapCustomConsoleOut(t *testing.T) {
 	sugarLogger.Error("Error")
 }
 
-//测试 zaplog 自定义 encoder
+// 测试 zaplog 自定义 encoder
 // 自动日志切割
 func TestZapCustomLogSplit(t *testing.T) {
 	writereSync := getLogWriter()
@@ -87,7 +87,7 @@ func TestZapCustomLogSplit(t *testing.T) {
 	}
 }
 
-//返回使用 Lumberack 切割日志的 zapcore.WriteSyncer
+// 返回使用 Lumberack 切割日志的 zapcore.WriteSyncer
 func getLogWriter2() zapcore.WriteSyncer {
 	lumberjackLogger := &lumberjack.Logger{
 		Filename:   "./test.log",

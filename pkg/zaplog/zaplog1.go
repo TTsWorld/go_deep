@@ -15,28 +15,26 @@ import (
 var logger *zap.Logger
 
 type Options struct {
-	LogFileDir    string //文件保存地方
-	AppName       string //日志文件前缀
-	ErrorFileName string
-	WarnFileName  string
-	InfoFileName  string
-	DebugFileName string
-	Level         zapcore.Level //日志等级
-	MaxSize       int           //日志文件小大（M）
-	MaxBackups    int           // 最多存在多少个切片文件
-	MaxAge        int           //保存的最大天数
-	Development   bool          //是否是开发模式
+	LogFileDir     string        //文件保存地方
+	AppName        string        //日志文件前缀
+	ErrorFileName  string        // error 级别日志文件名
+	NormalFileName string        // 非 error 级别日志文件名
+	Level          zapcore.Level //日志等级
+	MaxSize        int           //日志文件小大（M）
+	MaxBackups     int           // 最多存在多少个切片文件
+	MaxAge         int           //保存的最大天数
+	Development    bool          //是否是开发模式
 	zap.Config
 }
 
 type ModOptions func(options *Options)
 
 var (
-	l                              *Logger
-	sp                             = string(filepath.Separator)
-	errWS, warnWS, infoWS, debugWS zapcore.WriteSyncer       // IO输出
-	debugConsoleWS                 = zapcore.Lock(os.Stdout) // 控制台标准输出
-	errorConsoleWS                 = zapcore.Lock(os.Stderr)
+	l               *Logger
+	sp              = string(filepath.Separator)
+	errWS, normalWS zapcore.WriteSyncer       //  文件IO输出
+	debugConsoleWS  = zapcore.Lock(os.Stdout) // 控制台标准输出
+	errorConsoleWS  = zapcore.Lock(os.Stderr)
 )
 
 type Logger struct {
@@ -56,16 +54,14 @@ func NewLogger(mod ...ModOptions) *zap.Logger {
 		return nil
 	}
 	l.Opts = &Options{
-		LogFileDir:    "",
-		AppName:       "app",
-		ErrorFileName: "error.log",
-		WarnFileName:  "warn.log",
-		InfoFileName:  "info.log",
-		DebugFileName: "debug.log",
-		Level:         zapcore.DebugLevel,
-		MaxSize:       100,
-		MaxBackups:    60,
-		MaxAge:        30,
+		LogFileDir:     "",
+		AppName:        "app",
+		ErrorFileName:  "error.log",
+		NormalFileName: "normal.log",
+		Level:          zapcore.DebugLevel,
+		MaxSize:        100,
+		MaxBackups:     60,
+		MaxAge:         30,
 	}
 
 	if l.Opts.LogFileDir == "" {
@@ -111,14 +107,12 @@ func (l *Logger) setSyncs() {
 			MaxSize:    l.Opts.MaxSize,
 			MaxBackups: l.Opts.MaxBackups,
 			MaxAge:     l.Opts.MaxAge,
-			Compress:   true,
+			Compress:   false,
 			LocalTime:  true,
 		})
 	}
 	errWS = f(l.Opts.ErrorFileName)
-	warnWS = f(l.Opts.WarnFileName)
-	infoWS = f(l.Opts.InfoFileName)
-	debugWS = f(l.Opts.DebugFileName)
+	normalWS = f(l.Opts.NormalFileName)
 	return
 }
 
@@ -160,20 +154,9 @@ func SetErrorFileName(ErrorFileName string) ModOptions {
 		option.ErrorFileName = ErrorFileName
 	}
 }
-func SetWarnFileName(WarnFileName string) ModOptions {
+func SetNormalFileName(NormalFileName string) ModOptions {
 	return func(option *Options) {
-		option.WarnFileName = WarnFileName
-	}
-}
-
-func SetInfoFileName(InfoFileName string) ModOptions {
-	return func(option *Options) {
-		option.InfoFileName = InfoFileName
-	}
-}
-func SetDebugFileName(DebugFileName string) ModOptions {
-	return func(option *Options) {
-		option.DebugFileName = DebugFileName
+		option.NormalFileName = NormalFileName
 	}
 }
 func SetDevelopment(Development bool) ModOptions {
@@ -188,31 +171,20 @@ func (l *Logger) cores() zap.Option {
 	encoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	consoleEncoder := zapcore.NewConsoleEncoder(encoderConfig)
 
-	// NewJSONEncoder
 	errPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl == zapcore.ErrorLevel && zapcore.ErrorLevel-l.zapConfig.Level.Level() > -1
 	})
-	warnPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl == zapcore.WarnLevel && zapcore.WarnLevel-l.zapConfig.Level.Level() > -1
-	})
-	infoPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl == zapcore.InfoLevel && zapcore.InfoLevel-l.zapConfig.Level.Level() > -1
-	})
-	debugPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl == zapcore.DebugLevel && zapcore.DebugLevel-l.zapConfig.Level.Level() > -1
+	normalPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+		return zapcore.DebugLevel-l.zapConfig.Level.Level() > -1
 	})
 	cores := []zapcore.Core{
 		zapcore.NewCore(fileEncoder, errWS, errPriority),
-		zapcore.NewCore(fileEncoder, warnWS, warnPriority),
-		zapcore.NewCore(fileEncoder, infoWS, infoPriority),
-		zapcore.NewCore(fileEncoder, debugWS, debugPriority),
+		zapcore.NewCore(fileEncoder, normalWS, normalPriority),
 	}
 	if l.Opts.Development {
 		cores = append(cores, []zapcore.Core{
 			zapcore.NewCore(consoleEncoder, errorConsoleWS, errPriority),
-			zapcore.NewCore(consoleEncoder, debugConsoleWS, warnPriority),
-			zapcore.NewCore(consoleEncoder, debugConsoleWS, infoPriority),
-			zapcore.NewCore(consoleEncoder, debugConsoleWS, debugPriority),
+			zapcore.NewCore(consoleEncoder, debugConsoleWS, normalPriority),
 		}...)
 	}
 	return zap.WrapCore(func(c zapcore.Core) zapcore.Core {
@@ -227,8 +199,7 @@ func timeUnixNano(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 	enc.AppendInt64(t.UnixNano() / 1e6)
 }
 
-// log instance init
-//func InitLog() {
+// InitLog dev=true 模式，日志会被输出到console
 func InitLog(appname, level, fileDir string, devModule bool) {
 	logLevel := zap.DebugLevel
 	if "debug" == level {
@@ -239,22 +210,20 @@ func InitLog(appname, level, fileDir string, devModule bool) {
 		logLevel = zap.InfoLevel
 	}
 
-	if "error" == level {
-		logLevel = zap.ErrorLevel
-	}
-
 	if "warn" == level {
 		logLevel = zap.WarnLevel
 	}
-	fmt.Println("Init ZapLog, logLeel:", strings.ToUpper(logLevel.String()))
+
+	if "error" == level {
+		logLevel = zap.ErrorLevel
+	}
+	fmt.Println("Init ZapLog, logLevel:", strings.ToUpper(logLevel.String()))
 
 	logger = NewLogger(
 		SetAppName(appname),
 		SetDevelopment(devModule),
-		//SetDebugFileName("./test.log"),
-		//SetWarnFileName("./warn.log"),
-		//SetErrorFileName("./error.log"),
-		//SetInfoFileName("./info.log"),
+		SetErrorFileName("error.log"),
+		SetNormalFileName("normal.log"),
 		SetMaxAge(30),
 		SetMaxBackups(30),
 		SetMaxSize(1024),
